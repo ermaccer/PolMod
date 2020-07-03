@@ -5,7 +5,8 @@ PolMod to plugin do Poldek Drivera, który umożliwia dodanie pojazdów bez podm
 - Usunięto logo w lewym górnym logo
 - Usunięto reklamy/intro gry
 
-PolMod wymaga UAL (https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases) do działania. Archiwum już go zawiera.
+PolMod wymaga UAL (https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases) oraz gry spatchowanej do wersji 1.1 do działania.
+Archiwum już zawiera UAL.
 
 Dodatki:
 
