@@ -1,0 +1,10 @@
+﻿  polmod.cpp
+e:\projekty\polmod\polmod\code\polmod.cpp(59): warning C4018: '<': signed/unsigned mismatch
+e:\projekty\polmod\polmod\code\polmod.cpp(101): warning C4018: '>': signed/unsigned mismatch
+     Creating library E:\Projekty\PolMod\Release\PolMod.lib and object E:\Projekty\PolMod\Release\PolMod.exp
+  Generating code
+  2 of 814 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    2 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  PolMod.vcxproj -> E:\Projekty\PolMod\Release\PolMod.asi

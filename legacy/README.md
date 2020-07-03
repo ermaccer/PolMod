@@ -1,0 +1,1 @@
+Wersja bez łatki 1.1.
