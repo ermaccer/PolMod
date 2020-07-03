@@ -5,6 +5,8 @@ PolMod to plugin do Poldek Drivera, który umożliwia dodanie pojazdów bez podm
 - Usunięto logo w lewym górnym logo
 - Usunięto reklamy/intro gry
 
+PolMod wymaga UAL (https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases) do działania. Archiwum już go zawiera.
+
 Dodatki:
 
 ## Szybki Wybór Auta
@@ -16,3 +18,5 @@ bezpośrednie sterowanie autem za pomocą klawiszy **WSAD** (pozycja) i **QE** (
 
 ## "Dodawacz" Aut
 Umożliwia dodanie nowych aut do gry, auta dodają się automatycznie jeśli istnieje plik .ini danego wozu w folderze CARS (przykładowe pliki w archiwum PolModa).
+
+Stworzony i skompilowany w Visual Studio 2017.
