@@ -33,6 +33,18 @@
     <ClInclude Include="IniReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="code\poldekmp.h">
+      <Filter>Header Files\code</Filter>
+    </ClInclude>
+    <ClInclude Include="code\main.h">
+      <Filter>Header Files\code</Filter>
+    </ClInclude>
+    <ClInclude Include="dllmain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="code\eSettingsManager.h">
+      <Filter>Header Files\code</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -49,6 +61,15 @@
     </ClCompile>
     <ClCompile Include="IniReader.cpp">
       <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="code\poldekmp.cpp">
+      <Filter>Header Files\code</Filter>
+    </ClCompile>
+    <ClCompile Include="code\main.cpp">
+      <Filter>Header Files\code</Filter>
+    </ClCompile>
+    <ClCompile Include="code\eSettingsManager.cpp">
+      <Filter>Header Files\code</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

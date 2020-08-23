@@ -1,5 +1,9 @@
 #pragma once
 
+#define PLAYER_POINTER 0x4AA3E8
+#define AI_POINTER     0x4ABA58
+#define AI2_POINTER    0x4AC744
+#define AI3_POINTER    0x4AD430
 
 struct car_info {
 	char    carFile[64] = {};
@@ -9,17 +13,24 @@ struct car_info {
 };
 
 struct track_info {
-	char trackFile[64];
-	char marArchive[64];
-	int  unlocked;
-	float x, y, z, rot;
+	char trackFile[64] = {};
+	char marArchive[64] = {};
+	int unlock;
+	int unk;
+	float x;
+	float y;
+	float r;
 };
 
 struct track_details {
-	char pathFile[64];
-	char previewImage[64];
-	char marArchive[140];
-	float x, y, z, rot;
+
+	char pathFile[64] = {}; 
+		// nic nie jest u¿ywane?
+	char previewImage[64] = {};
+	char marArchive[128] = {};
+	float x;
+	float y;
+	float z;
 };
 
 
@@ -27,6 +38,7 @@ struct custom_car_info {
 	bool   noCollisionData;
 	bool   mrGear;
 	float  gearShift[5];
+	bool   isAI;
 };
 
 struct car_file {
@@ -74,5 +86,16 @@ public:
 namespace PoldekDriverFunctions {
 	void Draw2DText(float x, float y, float scale, float unk, char* text);
 	void Draw2DTextColor(float x, float y, float scale, float unk, char* text, int rgba);
+	void SetCurrentArchive(const char* file);
+	void CloseArchive();
+	void LoadCarData(int vehicle, const char* file);
+	void ResetVehicle(int vehicle);
+	void __fastcall SetPosition(int vehicle, float x, float y, float rot);
+	namespace AI {
+		void LoadCarData(int vehicle, int slot, const char* file);
+		void ResetVehicle(int vehicle);
+		void __fastcall SetPosition(int vehicle, float x, float y, float rot);
+		void Init(int slot);
+	}
 }
 
