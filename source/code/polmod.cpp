@@ -14,6 +14,7 @@
 using namespace Memory::VP;
 using namespace PoldekDriverFunctions;
 
+std::vector<std::string> szDriverNames;
 int tmp_ecx = 0;
 
 char strTemp[256];
@@ -30,6 +31,9 @@ int  pCarMarPointer2 = 0;
 int  pCarMarPointer3 = 0;
 int nLastRandomNumber = 0;
 
+const char* szPlayer1Name;
+const char* szPlayer2Name;
+const char* szPlayer3Name;
 
 bool bEnableSelMenu = 0;
 
@@ -49,6 +53,7 @@ std::vector<custom_car_info> customCarData;
 std::vector<custom_car_info> ai_customCarData;
 
 std::vector<track_info> trackData;
+std::vector<track_details> trackDetails;
 std::vector<std::string> trackPaths;
 std::unique_ptr<path[]> pathData;
 std::vector<int> trackSecondVariant;
@@ -62,17 +67,18 @@ std::vector<std::string> trackFilePaths;
 
 
 bool PolMod::bDebugMenu;
+bool PolMod::bHideHud;
 
 
 void PolMod::LoadCarFiles(const char * folder)
 {
-	if (!std::experimental::filesystem::exists(folder))
+	if (!std::filesystem::exists(folder))
 	{
 		MessageBoxA(0, "Folder does not exist!", folder, 0);
 	}
 	else
 	{
-		for (const auto & file : std::experimental::filesystem::recursive_directory_iterator(folder))
+		for (const auto & file : std::filesystem::recursive_directory_iterator(folder))
 		{
 			if (file.path().has_extension())
 			{
@@ -90,13 +96,13 @@ void PolMod::LoadCarFiles(const char * folder)
 
 void PolMod::LoadTrackFiles(const char * folder)
 {
-	if (!std::experimental::filesystem::exists(folder))
+	if (!std::filesystem::exists(folder))
 	{
 		MessageBoxA(0, "Folder does not exist!", folder, 0);
 	}
 	else
 	{
-		for (const auto & file : std::experimental::filesystem::recursive_directory_iterator(folder))
+		for (const auto & file : std::filesystem::recursive_directory_iterator(folder))
 		{
 			if (file.path().has_extension())
 			{
@@ -159,6 +165,7 @@ void PolMod::LoadTrackData(char * file)
 	CIniReader ini(file);
 	track_info info;
 	custom_track_info custom_track;
+	track_details details;
 	path extra;
 
 	sprintf(info.marArchive, ini.ReadString("Track", "MAR", 0));
@@ -173,16 +180,24 @@ void PolMod::LoadTrackData(char * file)
 
 	custom_track.fAdjustX = ini.ReadFloat("Track", "AdjustX", 50.0f);
 	custom_track.fAdjustY = ini.ReadFloat("Track", "AdjustY", 30.0f);
+	info.unlock = 1;
 
-	//sprintf(extra.name, ini.ReadString("Track", "PTH", 0));
-
-	info.unlock = ini.ReadInteger("Car", "Unlocked", 1);
-
+	
 	info.x = ini.ReadFloat("Track", "X", 1.0f);
 	info.y = ini.ReadFloat("Track", "Y", 1.0f);
 	info.r = ini.ReadFloat("Track", "R", 1.0f);
 
+	char* line = ini.ReadString("Track", "PlayerPos", "0 0 0");
+	sscanf(line, "%f %f %f", &details.plr.x, &details.plr.y, &details.plr.z);
 
+	line = ini.ReadString("Track", "AI1Pos", "0 0 0");
+	sscanf(line, "%f %f %f", &details.ai1.x, &details.ai1.y, &details.ai1.z);
+
+	line = ini.ReadString("Track", "AI2Pos", "0 0 0");
+	sscanf(line, "%f %f %f", &details.ai2.x, &details.ai2.y, &details.ai2.z);
+
+	line = ini.ReadString("Track", "AI3Pos", "0 0 0");
+	sscanf(line, "%f %f %f", &details.ai3.x, &details.ai3.y, &details.ai3.z);
 
 	char temp[256];
 	sprintf(temp, "%s", ini.ReadString("Track", "Name", "No name"));
@@ -196,11 +211,13 @@ void PolMod::LoadTrackData(char * file)
 	int no = 1;
 	trackSecondVariantNo.push_back(no);
 	trackNames.push_back(str);
-
+	trackDetails.push_back(details);
 	trackData.push_back(info);
 	customTrackData.push_back(custom_track);
 
 }
+
+
 
 void PolMod::LoadTrackImages()
 {
@@ -219,7 +236,7 @@ void PolMod::ProcessCustomInput()
 	}
 
 
-	if (nTempSelection + 1 > carData.size()) nTempSelection = 0;
+	if (nTempSelection > carData.size() - 1) nTempSelection = 0;
 	if (nTempSelection < 0) nTempSelection = carData.size() - 1;
 
 	if (bEnableSelMenu)
@@ -244,7 +261,12 @@ void PolMod::ProcessCustomInput()
 
 void PolMod::ProcessCustomInputInGame()
 {
-
+	if (GetAsyncKeyState(VK_F2))
+	{
+		if (GetTickCount() - keyTimer <= 150) return;
+		keyTimer = GetTickCount();
+		bHideHud ^= 1;
+	}
 }
 
 void PolMod::DoPatches()
@@ -273,45 +295,13 @@ void PolMod::DoPatches()
 	for (int i = 0; i < sizeof(unlockAdresses) / sizeof(int); i++)
 		Patch<int>(0x400000 + unlockAdresses[i], (int)&carData[0].unlocked);
 
+
+	
 	// .trk
 	Patch<int>(0x40837D + 3, (int)&trackData[0]);
 	Patch<int>(0x408360 + 3, (int)&trackData[0].marArchive);
 
 	Patch<int>(0x407E3D + 1, (int)&trackData[0].marArchive);
-
-	/*
-	Patch<int>(0x407F8B + 2, (int)&trackData[0].r);
-	Patch<int>(0x40803D + 3, (int)&trackData[0].r);
-	Patch<int>(0x4080B7 + 2, (int)&trackData[0].r);
-	Patch<int>(0x408182 + 2, (int)&trackData[0].r);
-	Patch<int>(0x4081E1 + 3, (int)&trackData[0].r);
-	Patch<int>(0x40825A + 2, (int)&trackData[0].r);
-	Patch<int>(0x4088E0 + 2, (int)&trackData[0].r);
-	Patch<int>(0x408954 + 3, (int)&trackData[0].r);
-	Patch<int>(0x4089A3 + 2, (int)&trackData[0].r);
-	Patch<int>(0x4089F7 + 2, (int)&trackData[0].r);
-	Patch<int>(0x408A44 + 2, (int)&trackData[0].r);
-	Patch<int>(0x408A99 + 3, (int)&trackData[0].r);
-	Patch<int>(0x408AE8 + 2, (int)&trackData[0].r);
-	
-	Patch<int>(0x407F98 + 2, (int)&trackData[0].x);
-	Patch<int>(0x4080C5 + 2, (int)&trackData[0].x);
-	Patch<int>(0x408196 + 2, (int)&trackData[0].x);
-	Patch<int>(0x408268 + 2, (int)&trackData[0].x);
-	Patch<int>(0x4088ED + 2, (int)&trackData[0].x);
-	Patch<int>(0x4089B1 + 2, (int)&trackData[0].x);
-	Patch<int>(0x408A52 + 2, (int)&trackData[0].x);
-	Patch<int>(0x408AF6 + 2, (int)&trackData[0].x);
-
-	Patch<int>(0x407F91 + 2, (int)&trackData[0].y);
-	Patch<int>(0x4080B1 + 2, (int)&trackData[0].y);
-	Patch<int>(0x408188 + 2, (int)&trackData[0].y);
-	Patch<int>(0x408254 + 2, (int)&trackData[0].y);
-	Patch<int>(0x4088E6 + 2, (int)&trackData[0].y);
-	Patch<int>(0x40899D + 2, (int)&trackData[0].y);
-	Patch<int>(0x408A3E + 2, (int)&trackData[0].y);
-	Patch<int>(0x408AE2 + 2, (int)&trackData[0].y);*/
-
 
 
 
@@ -334,7 +324,7 @@ void PolMod::DoPatches()
 		Patch<int>(0x400000 + osNoAddresses[i], (int)&trackSecondVariantNo[0]);
 
 	//Patch<int>(0x407FE1 + 3, (int)&trackExtra[0].name);
-
+	
 
 	// jakis float
 	Patch<int>(0x408008 + 3, (int)&carData[0].unknownFloat);
@@ -345,20 +335,12 @@ void PolMod::DoPatches()
 
 }
 
-void __declspec(naked)  PolMod::HookInfo()
+void PolMod::ProcessInfo()
 {
-	static int jmpContinue = 0x4070A0;
-
-	
-
-	_asm {
-		mov eax, 0x40C810
-		call eax
-	}
-
-
 	// kamera z tylu
 	PoldekDriver::nCurrentCamera = CAMERA_REAR;
+	PoldekDriver::nUnlockedTracks = (int)trackData.size();
+	PoldekDriver::nUnlockedCars = (int)carData.size();
 
 	if (customCarData[PoldekDriver::nSelectedVehicle].mrGear)
 		Patch<int>(0x401C38 + 6, 4);
@@ -384,17 +366,18 @@ void __declspec(naked)  PolMod::HookInfo()
 	Patch<float>(0x4742CC, customCarData[PoldekDriver::nSelectedVehicle].gearShift[3]);
 	Patch<float>(0x4742C8, customCarData[PoldekDriver::nSelectedVehicle].gearShift[4]);
 
+	bHideHud = false;
 
-	Draw2DTextColor(0.01f, 0.95f, 22.0, 0.0, "PolMod by ermaccer - polish-abandonware.pl", 0xFF20E1E8);
+	szPlayer1Name = szDriverNames[rand() % szDriverNames.size()].c_str();
+	szPlayer2Name = szDriverNames[rand() % szDriverNames.size()].c_str();
+	szPlayer3Name = szDriverNames[rand() % szDriverNames.size()].c_str();
+
 	if (SettingsMgr->bEnableMP)
-	MP::Events::OnMainMenuProcess();
-	_asm jmp jmpContinue
+		MP::Events::OnMainMenuProcess();
 }
 
-void __declspec(naked) PolMod::HookCarTextName()
+void PolMod::ProcessCarSelectInfo()
 {
-	static int jmpPoint = 0x4077E9;
-
 	ProcessCustomInput();
 
 	if (bEnableSelMenu)
@@ -412,6 +395,29 @@ void __declspec(naked) PolMod::HookCarTextName()
 		Draw2DText(0.179f, 0.20f, 25.0, 0.0, strTemp);
 	}
 
+}
+
+void __declspec(naked)  PolMod::HookInfo()
+{
+	static int jmpContinue = 0x4070A0;
+
+	
+
+	_asm {
+		mov eax, 0x40C810
+		call eax
+	}
+
+
+	
+	_asm jmp jmpContinue
+}
+
+void __declspec(naked) PolMod::HookCarTextName()
+{
+	static int jmpPoint = 0x4077E9;
+
+	
 	sprintf(strTemp, "%s", carNames[PoldekDriver::nSelectedVehicle].c_str());
 	pStringPointer = (int)&strTemp;
 	_asm
@@ -436,7 +442,6 @@ void __declspec(naked) PolMod::HookTrackTextName()
 }
 
 
-
 void PolMod::HookHUDData()
 {
 	_asm
@@ -445,16 +450,30 @@ void PolMod::HookHUDData()
 		mov ecx, eax
 		mov tmp_ecx, ecx
 	}
-
+	
 	ProcessCustomInputInGame();
+
+	if (bHideHud)
+		*(float*)0x474420 = 0.0f;
+	else
+		*(float*)0x474420 = 0.0020833334f;
 
 	if (bDebugMenu)
 	{
 
 		car_file car = *(car_file*)(0x4AA3E8 + 0xB38);
 
-	   	sprintf(strTemp, "X: %.2f Y: %.2f Z: %f Rot: %.2f", *(float*)(0x4AA3E8 + 0xA3C), *(float*)(0x4AA3E8 + 0xA3C + 4), *(float*)(0x4AA3E8 + 0x9C0), *(float*)(0x4AA3E8 + 0x930));
-	     Draw2DText(0.029f, 0.10f, 24.0, 0.0, strTemp);
+		sprintf(strTemp, "X: %.2f Y: %.2f Z: %f Rot: %.2f", *(float*)(0x4AA3E8 + 0xA3C), *(float*)(0x4AA3E8 + 0xA3C + 4), *(float*)(0x4AA3E8 + 0x9C0), *(float*)(0x4AA3E8 + 0x930));
+		Draw2DText(0.029f, 0.10f, 32.0, 0.0, strTemp);
+
+		sprintf(strTemp, "AI X: %.2f Y: %.2f Z: %f Rot: %.2f", *(float*)(AI_POINTER + 0xB30), *(float*)(AI_POINTER + 0xB34), *(float*)(AI_POINTER + 0xABC), *(float*)(AI_POINTER + 0xA38));
+		Draw2DText(0.029f, 0.20f, 32.0, 0.0, strTemp);
+
+		sprintf(strTemp, "AI2 X: %.2f Y: %.2f Z: %f Rot: %.2f", *(float*)(AI2_POINTER + 0xB30), *(float*)(AI2_POINTER + 0xB34), *(float*)(AI2_POINTER + 0xABC), *(float*)(AI2_POINTER + 0xA38));
+		Draw2DText(0.029f, 0.30f, 32.0, 0.0, strTemp);
+
+		sprintf(strTemp, "AI3 X: %.2f Y: %.2f Z: %f Rot: %.2f", *(float*)(AI3_POINTER + 0xB30), *(float*)(AI3_POINTER + 0xB34), *(float*)(AI3_POINTER + 0xABC), *(float*)(AI3_POINTER + 0xA38));
+		Draw2DText(0.029f, 0.40f, 32.0, 0.0, strTemp);
 
 
 		// ad
@@ -493,34 +512,39 @@ void PolMod::HookHUDData()
 
 void __fastcall PolMod::HookTrackPositionRace(int ptr, float x, float y, float z)
 {
+	vector pos;
+	pos = GetTrackPos(PLAYER);
 
-	float newx = trackData[PoldekDriver::nSelectedTrack].x;
-	float newy = trackData[PoldekDriver::nSelectedTrack].y;
 
 
-	SetPosition(ptr, newx, newy, trackData[PoldekDriver::nSelectedTrack].r);
+	pos.x *= 10.0f;
+	pos.y *= 10.0f;
+	printf("%f %f %f\n", pos.x, pos.y, pos.z);
+	SetPosition(ptr, pos.x, pos.y, pos.z);
 }
 
 void __fastcall PolMod::HookTrackPositionAIRace(int ptr, float x, float y, float z)
 {
 	float fAdjustX = 0.0f, fAdjustY = 0.0f;
+	vector pos;
 	switch (ptr)
 	{
 	case AI_POINTER:
-		fAdjustX = -customTrackData[PoldekDriver::nSelectedTrack].fAdjustX;
-		fAdjustY = -customTrackData[PoldekDriver::nSelectedTrack].fAdjustY;
+		pos = GetTrackPos(AI1);
 		break;
 	case AI2_POINTER:
-		fAdjustX = -customTrackData[PoldekDriver::nSelectedTrack].fAdjustX;
-		fAdjustY = 0.0f;
+		pos = GetTrackPos(AI2);
 		break;
 	case AI3_POINTER:
-		fAdjustX = 0.0f;
-		fAdjustY = -customTrackData[PoldekDriver::nSelectedTrack].fAdjustY;
+		pos = GetTrackPos(AI3);
 		break;
 	}
 
-	AI::SetPosition(ptr, trackData[PoldekDriver::nSelectedTrack].x + fAdjustX, trackData[PoldekDriver::nSelectedTrack].y + fAdjustY, trackData[PoldekDriver::nSelectedTrack].r);
+	pos.x *= 10.0f;
+	pos.y *= 10.0f;
+
+	printf("%f %f %f\n", pos.x, pos.y, pos.z);
+	AI::SetPosition(ptr, pos.x, pos.y, pos.z);
 }
 
 int __fastcall PolMod::Hook41D2D0(int ptr, float rot, int unk)
@@ -544,13 +568,10 @@ void __declspec(naked) PolMod::HookLoadTrack()
 	printf("%s\n", (char*)pTrackPointer);
 	_asm
 	{
-		lea eax, ds:0x4AE5A0
-		mov ecx, eax
 		push pTrackPointer
 		jmp loadTrack
 	}
 }
-
 
 void PolMod::GenPathPointer()
 {
@@ -587,17 +608,115 @@ void __declspec(naked) PolMod::HookLoadPath()
 	}
 }
 
-void PolMod::SetupCarRandomizer()
+void PolMod::SetupRandomizer()
 {
 	srand(time(NULL));
+}
+
+
+
+void PolMod::SetupDriverNames()
+{
+
+	FILE* pList = fopen("nicknames.txt", "rb");
+
+	char szLine[2048];
+
+	while (fgets(szLine, sizeof(szLine), pList))
+	{
+		if (szLine[0] == ';' || szLine[0] == '#' || szLine[0] == '\n')
+			continue;
+
+		//printf("%s", szLine);
+
+		std::string name(szLine, strlen(szLine));
+
+
+
+		szDriverNames.push_back(name);
+	}
+	for (int i = 0; i < szDriverNames.size(); i++)
+		printf("%s", szDriverNames[i].c_str());
+
+
+}
+
+void PolMod::HookDriverName(char * dest, char * text, int min, int max)
+{
+	sprintf(dest, "%s %u/%u", szPlayer1Name, min, max);
+}
+
+void PolMod::HookDriverName2(char * dest, char * text, int min, int max)
+{
+	sprintf(dest, "%s %u/%u", szPlayer2Name, min, max);
+}
+
+void PolMod::HookDriverName3(char * dest, char * text, int min, int max)
+{
+	sprintf(dest, "%s %u/%u", szPlayer3Name, min, max);
+}
+
+char * PolMod::GetDriverName(int id)
+{
+	switch (id)
+	{
+	case 0:
+		return (char*)szPlayer1Name; break;
+	case 1:
+		return (char*)szPlayer2Name; break;
+	case 2:
+		return (char*)szPlayer3Name; break;
+	default:
+		break;
+	}
 }
 
 int PolMod::GetRandomizedCarID()
 {
 	int id = rand() % ai_carData.size();
-	//printf("wylosowalo %d (%s)\n", id,ai_carData[id].carFile);
 	return id;
 }
+
+char * PolMod::GetVehicleCar()
+{
+	return carData[PoldekDriver::nSelectedVehicle].carFile;
+}
+
+char * PolMod::GetVehicleName()
+{
+	return (char*)carNames[PoldekDriver::nSelectedVehicle].c_str();
+}
+
+char * PolMod::GetVehicleMar()
+{
+	return carData[PoldekDriver::nSelectedVehicle].marArchive;
+}
+
+int PolMod::GetVehiclesAmount()
+{
+	return carData.size();
+}
+
+char * PolMod::GetTrackName()
+{
+	return (char*)trackNames[PoldekDriver::nSelectedTrack].c_str();
+}
+
+vector PolMod::GetTrackPos(ePlayerIDs who)
+{
+	switch (who)
+	{
+	case PLAYER:
+		return trackDetails[PoldekDriver::nSelectedTrack].plr; break;
+	case AI1:
+		return trackDetails[PoldekDriver::nSelectedTrack].ai1; break;
+	case AI2:
+		return trackDetails[PoldekDriver::nSelectedTrack].ai2; break;
+	case AI3:
+		return trackDetails[PoldekDriver::nSelectedTrack].ai3; break;
+	}
+}
+
 
 void __declspec(naked)PolMod::HookCreateAICarOne()
 {

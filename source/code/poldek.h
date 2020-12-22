@@ -5,6 +5,10 @@
 #define AI2_POINTER    0x4AC744
 #define AI3_POINTER    0x4AD430
 
+
+struct vector {
+	float x, y, z;
+};
 struct car_info {
 	char    carFile[64] = {};
 	char    marArchive[64] = {};
@@ -23,14 +27,10 @@ struct track_info {
 };
 
 struct track_details {
-
-	char pathFile[64] = {}; 
-		// nic nie jest u¿ywane?
-	char previewImage[64] = {};
-	char marArchive[128] = {};
-	float x;
-	float y;
-	float z;
+	vector plr;
+	vector ai1;
+	vector ai2;
+	vector ai3;
 };
 
 
@@ -74,6 +74,12 @@ enum eCameraTypes {
 	CAMERA_CINEMATIC
 };
 
+// keys
+
+enum eDirectInputKeys {
+	KEY_
+};
+
 
 class PoldekDriver {
 public:
@@ -81,16 +87,22 @@ public:
 	static int& nSelectedTrack;
 	static int& nCurrentCamera;
 
+	static int& nUnlockedTracks;
+	static int& nUnlockedCars;
 };
 
 namespace PoldekDriverFunctions {
 	void Draw2DText(float x, float y, float scale, float unk, char* text);
 	void Draw2DTextColor(float x, float y, float scale, float unk, char* text, int rgba);
+	void DrawImageRuntime(int id, float x, float y, float sizex, float sizey, int unk);
+	void BeginDraw();
+	void EndDraw();
 	void SetCurrentArchive(const char* file);
 	void CloseArchive();
 	void LoadCarData(int vehicle, const char* file);
 	void ResetVehicle(int vehicle);
 	void __fastcall SetPosition(int vehicle, float x, float y, float rot);
+	void Setup3DScene(float a2, float a3, float a4, float a5, float a6, float a7, float a8, float a9, float a10);
 	namespace AI {
 		void LoadCarData(int vehicle, int slot, const char* file);
 		void ResetVehicle(int vehicle);
@@ -98,4 +110,7 @@ namespace PoldekDriverFunctions {
 		void Init(int slot);
 	}
 }
+
+
+// input (todo - array)
 

@@ -1,13 +1,12 @@
 #pragma once
-#include <string>
+#include "poldek.h"
+
 
 enum ePlayerIDs {
 	PLAYER,
 	AI1,
 	AI2,
 	AI3,
-
-
 	TOTAL_PLAYERS
 };
 
@@ -16,6 +15,8 @@ namespace MP {
 		void OnGameLoad();
 		void OnGameProcess();
 		void OnMainMenuProcess();
+		void DrawConnectionStatus();
+
 		int  GetServerMapName();
 		int  GetServerPathName();
 		int  GetServerCarAIName();
@@ -26,6 +27,8 @@ namespace MP {
 		int  GetServerCarAIArchive2Name();
 		int  GetServerCarAIArchive3Name();
 	}
+
 	void InitHooks();
 	void SetPlayerPosition(ePlayerIDs ID, float X, float Y, float Rotation);
+	void RefreshCar(ePlayerIDs ID, char* car, char* mar);
 }

@@ -16,6 +16,12 @@
     <Filter Include="Header Files\code">
       <UniqueIdentifier>{4041426b-9e0e-41ff-a41f-4a77820948ca}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\code\polmod">
+      <UniqueIdentifier>{cb5d5154-37da-4e8e-afc9-f76c6ef7999d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\code\poldek">
+      <UniqueIdentifier>{fd2eb308-10c3-4142-94eb-767b2d964898}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -45,6 +51,15 @@
     <ClInclude Include="code\eSettingsManager.h">
       <Filter>Header Files\code</Filter>
     </ClInclude>
+    <ClInclude Include="code\eNewFrontend.h">
+      <Filter>Header Files\code\polmod</Filter>
+    </ClInclude>
+    <ClInclude Include="code\poldek\music.h">
+      <Filter>Header Files\code\poldek</Filter>
+    </ClInclude>
+    <ClInclude Include="code\poldek\core.h">
+      <Filter>Header Files\code\poldek</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -70,6 +85,12 @@
     </ClCompile>
     <ClCompile Include="code\eSettingsManager.cpp">
       <Filter>Header Files\code</Filter>
+    </ClCompile>
+    <ClCompile Include="code\eNewFrontend.cpp">
+      <Filter>Header Files\code\polmod</Filter>
+    </ClCompile>
+    <ClCompile Include="code\poldek\music.cpp">
+      <Filter>Header Files\code\poldek</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

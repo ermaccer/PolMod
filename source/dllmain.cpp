@@ -1,17 +1,21 @@
-// dllmain.cpp : Defines the entry point for the DLL application.
+﻿// dllmain.cpp : Defines the entry point for the DLL application.
+
+#include <iostream>
 #include "pch.h"
 #include "MemoryMgr.h"
 #include "code/polmod.h"
 #include "code/poldekmp.h"
 #include "code/main.h"
 #include "dllmain.h"
+#include "code/poldekmp.h"
+#include "code/eNewFrontend.h"
 
 #include "code/eSettingsManager.h"
 
 using namespace Memory::VP;
+using namespace MP;
 
 void null() {}
-void __fastcall thisnull() {}
 
 
 void Init()
@@ -21,14 +25,15 @@ void Init()
 	if (SettingsMgr->bWlaczKonsole)
 	{
 		AllocConsole();
-		freopen("CONIN$", "r", stdin);
+	    freopen("CONIN$", "r", stdin);
 		freopen("CONOUT$", "w", stdout);
 		freopen("CONOUT$", "w", stderr);
 	}
 
-
+	PolMod::SetupRandomizer();
+	PolMod::SetupDriverNames();
 	PolMod::LoadCarFiles("CARS");
-	PolMod::SetupCarRandomizer();
+
 	PolMod::LoadTrackFiles("TRACKS");
 	PolMod::GenPathPointer();
 	PolMod::DoPatches();
@@ -42,12 +47,9 @@ void Init()
 	Patch<int>(0x41C7BF + 1, -1);
 	Patch<int>(0x41C7D4 + 1, -1);
 
-	//if (SettingsMgr->bWylaczUszkodzeniaAI)
-	//{
-	//	Nop(0x41937E, 4);
-	//	Nop(0x4193AE, 4);
-	//	Nop(0x4193D9, 4);
-	//}
+	Nop(0x419426, 4);
+	Nop(0x419451, 4);
+	Nop(0x419476, 4);
 
 	InjectHook(0x40709B, PolMod::HookInfo, PATCH_JUMP);
 	InjectHook(0x407794, PolMod::HookCarTextName, PATCH_JUMP);
@@ -68,9 +70,10 @@ void Init()
 	InjectHook(0x408B07, PolMod::HookTrackPositionAIRace, PATCH_CALL);
 	Patch<char>(0x484504, 0x00);
 
+
     Nop(0x407FE1, 8);
 	InjectHook(0x407FE1, PolMod::HookLoadPath, PATCH_JUMP);
-
+	
 	InjectHook(0x40805A, PolMod::HookCreateAICarOne, PATCH_JUMP);
 	InjectHook(0x408072, PolMod::HookCreateAICarTwo, PATCH_JUMP);
 
@@ -80,14 +83,16 @@ void Init()
 	InjectHook(0x4081F8, PolMod::HookCreateAI3CarOne, PATCH_JUMP);
 	InjectHook(0x408215, PolMod::HookCreateAI3CarTwo, PATCH_JUMP);
 
+
 	if (SettingsMgr->bEnableMP)
 	{
 		MP::InitHooks();
-		InjectHook(0x408378, PolMod::HookLoadTrack, PATCH_JUMP);
+		Nop(0x40837D, 7);
+		InjectHook(0x40837D, PolMod::HookLoadTrack, PATCH_JUMP);
 	}
 
 	Patch<int>(0x41C46E + 4, (int)MainHooks::HookedWndProc);
-
+	eNewFrontend::Init();
 
 }
 
@@ -99,3 +104,4 @@ extern "C"
 		Init();
 	}
 }
+

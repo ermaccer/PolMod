@@ -1,8 +1,9 @@
 #include "poldekmp.h"
 #include "poldek.h"
-#include <Windows.h>
-#include <memory>
+#include "polmod.h"
+#include "eSettingsManager.h"
 #include "..\MemoryMgr.h"
+
 using namespace Memory::VP;
 using namespace PoldekDriverFunctions;
 
@@ -17,6 +18,9 @@ char carArchive1Buffer[128];
 char carArchive2Buffer[128];
 char carArchive3Buffer[128];
 
+char textBuffer[512];
+
+
 void MP::InitHooks()
 {
 	Nop(0x41759D, 6);
@@ -24,8 +28,12 @@ void MP::InitHooks()
 	Nop(0x417745, 6);
 }
 
+
+
 void MP::SetPlayerPosition(ePlayerIDs ID, float X, float Y, float Rotation)
 {
+	X *= 10;
+	Y *= 10;
 	switch (ID)
 	{
 	case PLAYER:
@@ -39,60 +47,113 @@ void MP::SetPlayerPosition(ePlayerIDs ID, float X, float Y, float Rotation)
 	}
 }
 
+void MP::RefreshCar(ePlayerIDs ID, char * car, char * mar)
+{
+	switch (ID)
+	{
+	case PLAYER:
+		break;
+	case AI1:
+		SetCurrentArchive(mar);
+		AI::LoadCarData(AI_POINTER, 0, car);
+		CloseArchive();
+		break;
+	case AI2:
+		SetCurrentArchive(mar);
+		AI::LoadCarData(AI2_POINTER, 1, car);
+		CloseArchive();
+		break;
+	case AI3:
+		SetCurrentArchive(mar);
+		AI::LoadCarData(AI3_POINTER, 2, car);
+		CloseArchive();
+		break;
+	}
+}
+
+
 void MP::Events::OnGameLoad()
 {
+
+
 }
 
 void MP::Events::OnGameProcess()
 {
+
+	
 }
+
 
 void MP::Events::OnMainMenuProcess()
 {
+	DrawConnectionStatus();
+	
 }
+
+
+
+
+void MP::Events::DrawConnectionStatus()
+{
+	/*
+	if (bConnected)
+	{
+		sprintf(textBuffer, "Po³¹czono z serwerem %s", SettingsMgr->szIP);
+		Draw2DTextColor(0.01f, 0.75f, 22.0, 0.0, textBuffer, 0xFF30FF30);
+	}
+	else
+	{
+		sprintf(textBuffer, "B³¹d po³¹czenia z serwerem %s", SettingsMgr->szIP);
+		Draw2DTextColor(0.01f, 0.75f, 22.0, 0.0, textBuffer, 0xFFFF3030);
+	}
+	*/
+}
+
 int MP::Events::GetServerMapName()
 {
-	sprintf(mapBuffer, "%s", "TODO");
+	sprintf(mapBuffer, "%s", "data\\wolka.mar");
 	return (int)&mapBuffer;
 }
 
 int MP::Events::GetServerPathName()
 {
-	sprintf(pathBuffer, "%s", "Path - TODO");
+	sprintf(pathBuffer, "%s", "wolka1.pth");
 	return (int)&pathBuffer;
 }
 
 int MP::Events::GetServerCarAIName()
 {
-	sprintf(car1Buffer, "%s", "Car 1 - TODO");
+	sprintf(car1Buffer, "%s", "blackbeast.car");
 	return (int)&car1Buffer;
 }
 
 int MP::Events::GetServerCarAI2Name()
 {
-	sprintf(car2Buffer, "%s", "Car 2 - TODO");
+	sprintf(car2Buffer, "%s", "black.car");
 	return (int)&car2Buffer;
 }
 
 int MP::Events::GetServerCarAI3Name()
 {
-	sprintf(car3Buffer, "%s", "Car 3 - TODO");
+	sprintf(car3Buffer, "%s", "blackbeast.car");
 	return (int)&car3Buffer;
 }
 
 int MP::Events::GetServerCarAIArchiveName()
 {
-	sprintf(carArchive1Buffer, "%s", "Car 1 - TODO");
-	return (int)&car1Buffer;
+	sprintf(carArchive1Buffer, "%s", "data\\blackbeast.mar");
+	return (int)&carArchive1Buffer;
 }
 
 int MP::Events::GetServerCarAIArchive2Name()
 {
-	return 0;
+	sprintf(carArchive2Buffer, "%s", "data\\black_dres.mar");
+	return (int)&carArchive2Buffer;
 }
 
 int MP::Events::GetServerCarAIArchive3Name()
 {
-	return 0;
+	sprintf(carArchive3Buffer, "%s", "data\\black_dres.mar");
+	return (int)&carArchive3Buffer;
 }
-

@@ -1,4 +1,7 @@
 #pragma once
+#include "poldek.h"
+#include "polmod.h"
+#include "poldekmp.h"
 
 #define TRACK_IMAGES_START 50
 
@@ -11,6 +14,7 @@ struct custom_track_info {
 class PolMod {
 public:
 	static bool bDebugMenu;
+	static bool bHideHud;
 
 	static void LoadCarFiles(const char* folder);
 	static void LoadTrackFiles(const char* folder);
@@ -20,6 +24,8 @@ public:
 	static void ProcessCustomInput();
 	static void ProcessCustomInputInGame();
 	static void DoPatches();
+	static void ProcessInfo();
+	static void ProcessCarSelectInfo();
 	// hooks
 	static void HookInfo();
 	static void HookCarTextName();
@@ -33,8 +39,24 @@ public:
 	static void GenPathPointer();
 	static void UpdatePathPointer();
 	static void HookLoadPath();
-	static void SetupCarRandomizer();
+	static void SetupRandomizer();
+	static void SetupDriverNames();
+	static void HookDriverName(char* dest, char* text, int min, int max);
+	static void HookDriverName2(char* dest, char* text, int min, int max);
+	static void HookDriverName3(char* dest, char* text, int min, int max);
+
+	static char* GetDriverName(int id);
+
 	static int  GetRandomizedCarID();
+
+	static char* GetVehicleCar();
+	static char* GetVehicleName();
+	static char* GetVehicleMar();
+	static int   GetVehiclesAmount();
+	static char* GetTrackName();
+
+	static vector GetTrackPos(ePlayerIDs who);
+
 	static void HookCreateAICarOne();
 	static void HookCreateAICarTwo();
 
